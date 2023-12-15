@@ -1,7 +1,8 @@
-use std::fs::File;
+use std::fs::{File, ReadDir};
 use std::{fs, io};
+use std::collections::HashMap;
 use std::io::{BufReader, Read, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 struct FileSize {}
 
@@ -54,34 +55,25 @@ fn split(path: &Path, limit: u64) -> io::Result<()> {
     })
 }
 
-fn join(path: &Path) -> io::Result<()> {
-    // let file = File::create("").unwrap();
+fn shift_extension(path: &str) {
+    // path.
+}
 
-    let paths = fs::read_dir(path)
+fn join(path: &Path) -> io::Result<()> {
+    let paths: Vec<PathBuf> = fs::read_dir(path)
         .unwrap()
         .flatten()
         .map(|p|p.path())
-        
-        ;
+        .filter(|p|p.as_path().extension().filter(|e|e == &"split").is_some())
+        .collect();
+
+    let first = paths.get(0).expect("Not found.");
+    let file = File::create(first.as_path()).unwrap();
 
     for path in paths {
-        if path.as_path().extension().filter(|e|e == &"split").is_some() {
-            println!("Name: {}", path.display())
-        }
+        println!("Name: {}", path.display())
     }
 
-    // let mut i = 0;
-    // let mut reader = BufReader::new(File::open(path)?);
-    // split_stream(path.metadata()?.len(), limit, |s| {
-    //     let mut f = File::create(format_part(i + 1, path).unwrap())?;
-    //     i += 1;
-    //     split_stream(s, FileSize::of_mega_bytes(5), |t| {
-    //         let mut buffer = vec![0; t as usize];
-    //         reader.read_exact(&mut buffer)?;
-    //         f.write_all(&buffer)?;
-    //         Ok(())
-    //     })
-    // })
     Ok(())
 }
 
