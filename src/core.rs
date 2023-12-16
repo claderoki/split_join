@@ -1,7 +1,7 @@
 use std::fs::File;
-use std::{fs, io};
 use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 struct Progress {
     total: u64,
@@ -68,7 +68,7 @@ fn shift_by(by: char, path: &str, amount: usize) -> String {
             break;
         }
         if char == by {
-            last_found = i-1;
+            last_found = i - 1;
             found += 1;
         }
         i -= 1;
@@ -80,11 +80,15 @@ fn join(path: &Path) -> io::Result<()> {
     let paths: Vec<PathBuf> = fs::read_dir(path)
         .unwrap()
         .flatten()
-        .map(|p|p.path())
-        .filter(|p|p.as_path().extension().filter(|e|e == &"split").is_some())
+        .map(|p| p.path())
+        .filter(|p| p.as_path().extension().filter(|e| e == &"split").is_some())
         .collect();
 
-    let shifted = paths.get(0).and_then(|f|f.to_str()).map(|f|shift_by('.', f, 2)).unwrap();
+    let shifted = paths
+        .get(0)
+        .and_then(|f| f.to_str())
+        .map(|f| shift_by('.', f, 2))
+        .unwrap();
     let joined_name = format!("{shifted}.join");
     let mut file = File::create(joined_name)?;
 

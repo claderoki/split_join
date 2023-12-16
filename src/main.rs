@@ -1,6 +1,7 @@
 mod core;
 
 use eframe::egui;
+use egui::UserAttentionType;
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
@@ -10,15 +11,26 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "SplitJoin",
         options,
-        Box::new(|_cc| {
-            Box::<MyApp>::default()
-        }),
+        Box::new(|_cc| Box::<MyApp>::default()),
     )
 }
 
 #[derive(Default)]
 struct MyApp {
     picked_path: Option<String>,
+    filesize: FileSize,
+    size: String,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+enum FileSize {
+    KiloBytes,
+    #[default]
+    MegaBytes,
+    GigaBytes,
+}
+
+fn repr(filesize: FileSize) -> String {
+    format!("{filesize:?}")
 }
 
 impl eframe::App for MyApp {
@@ -36,32 +48,38 @@ impl eframe::App for MyApp {
             if let Some(picked_path) = &self.picked_path {
                 ui.monospace(picked_path);
 
-                if ui.button("Join").clicked() {}
-
+                ui.separator();
                 ui.horizontal(|ui| {
-                    // let mut size = "";
-                    // ui.text_edit_singleline(&mut size);
-                    if ui.button("Split").clicked() {
-
-                    }
+                    egui::ComboBox::new("filesize", "")
+                        .selected_text(repr(self.filesize))
+                        .show_ui(ui, |ui| {
+                            for kind in [
+                                FileSize::MegaBytes,
+                                FileSize::GigaBytes,
+                                FileSize::KiloBytes,
+                            ] {
+                                ui.selectable_value(&mut self.filesize, kind, repr(kind));
+                            }
+                        });
+                        ui.text_edit_singleline(&mut self.size);
+                        if ui.button("Split").clicked() {}
                 });
+                ui.separator();
+                if ui.button("Join").clicked() {}
             }
         });
     }
 }
 
+// println!("Shifted 0: {}", shift_by('.', "filename.zip", 0));
+// println!("Shifted 1: {}", shift_by('.', "filename.zip.part1", 1));
+// println!("Shifted 2: {}", shift_by('.', "filename.zip.part1.split", 2));
 
-    // println!("Shifted 0: {}", shift_by('.', "filename.zip", 0));
-    // println!("Shifted 1: {}", shift_by('.', "filename.zip.part1", 1));
-    // println!("Shifted 2: {}", shift_by('.', "filename.zip.part1.split", 2));
+// let path = Path::new("C:/Users/Clark/Desktop/files/hjsplit.exe");
+// split(path, FileSize::of_kilo_bytes(40)).unwrap();
 
-    // let path = Path::new("C:/Users/Clark/Desktop/files/hjsplit.exe");
-    // split(path, FileSize::of_kilo_bytes(40)).unwrap();
-
-    // let base = Path::new("C:/Users/Clark/Desktop/files");
-    // join(base);
-
-
+// let base = Path::new("C:/Users/Clark/Desktop/files");
+// join(base);
 
 #[cfg(test)]
 mod tests {
