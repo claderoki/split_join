@@ -1,11 +1,10 @@
 mod core;
 
 use eframe::egui;
-use egui::UserAttentionType;
 
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([500.0, 240.0]),
         ..Default::default()
     };
     eframe::run_native(
@@ -15,12 +14,6 @@ fn main() -> Result<(), eframe::Error> {
     )
 }
 
-#[derive(Default)]
-struct MyApp {
-    picked_path: Option<String>,
-    filesize: FileSize,
-    size: String,
-}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 enum FileSize {
     KiloBytes,
@@ -31,6 +24,13 @@ enum FileSize {
 
 fn repr(filesize: FileSize) -> String {
     format!("{filesize:?}")
+}
+
+#[derive(Default)]
+struct MyApp {
+    picked_path: Option<String>,
+    filesize: FileSize,
+    size: String,
 }
 
 impl eframe::App for MyApp {
@@ -48,24 +48,26 @@ impl eframe::App for MyApp {
             if let Some(picked_path) = &self.picked_path {
                 ui.monospace(picked_path);
 
-                ui.separator();
-                ui.horizontal(|ui| {
-                    egui::ComboBox::new("filesize", "")
-                        .selected_text(repr(self.filesize))
-                        .show_ui(ui, |ui| {
-                            for kind in [
-                                FileSize::MegaBytes,
-                                FileSize::GigaBytes,
-                                FileSize::KiloBytes,
-                            ] {
-                                ui.selectable_value(&mut self.filesize, kind, repr(kind));
-                            }
-                        });
+                if (picked_path.ends_with(".split")) {
+                    if ui.button("Join").clicked() {}
+                } else {
+                    ui.separator();
+                    ui.horizontal(|ui| {
+                        egui::ComboBox::new("filesize", "")
+                            .selected_text(repr(self.filesize))
+                            .show_ui(ui, |ui| {
+                                for kind in [
+                                    FileSize::MegaBytes,
+                                    FileSize::GigaBytes,
+                                    FileSize::KiloBytes,
+                                ] {
+                                    ui.selectable_value(&mut self.filesize, kind, repr(kind));
+                                }
+                            });
                         ui.text_edit_singleline(&mut self.size);
                         if ui.button("Split").clicked() {}
-                });
-                ui.separator();
-                if ui.button("Join").clicked() {}
+                    });
+                }
             }
         });
     }
